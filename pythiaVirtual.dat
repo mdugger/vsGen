@@ -1,0 +1,48 @@
+MSEL 2    
+
+MSTP 13 2 
+MSTP 14 10 //Include all QCD physics of gamma* p
+MSTP 20 0 
+MSTP 58 4 
+MSTP 92 4 
+MSTP 101 1 
+MSTP 121 1 
+#MSTP 171 1  //for variable energy
+#MSTP 172 1  //for variable energy
+
+PARP 2 2.54739  //min egamma for pythia
+PARP 18 0.17 
+PARP 89 1000 
+PARP 91 0.40 
+PARP 93 2.0 
+PARP 99 0.40 
+PARP 102 0.5 
+PARP 103 0.5 
+PARP 104 0.3 
+PARP 111 0.0 
+PARP 121 2.0 
+PARP 161 3.0 
+PARP 162 24.6 
+PARP 165 0.47679 
+PARP 166 0.67597 
+
+PARJ 1 0.029 
+PARJ 2 0.283 
+PARJ 3 1.20 
+PARJ 21 0.40 
+PARJ 23 0.03 
+PARJ 41 1.94 
+PARJ 42 0.544 
+PARJ 45 1.05 
+
+MSTJ 12 1 //q q-bar production allowed. diquarks treated as a unit
+MSTJ 45 4 //maximum number of flavors in a shower: g->q q-bar
+
+MSTU 112 4 //nominal number of flavors for alpha_s
+MSTU 113 4 //minimum number of flavors for alpha_s
+MSTU 114 4 //maximum number of flavors for alpha_s
+
+CKIN 1 1.0 //Lower bound of W
+CKIN 66 100.0 //
+#CKIN 65 0.01
+#CKIN 66 0.35
