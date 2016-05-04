@@ -51,6 +51,11 @@ void writeLund(vsGen_t vsGen,ofstream *lundFile);
 TH1D *h101 = new TH1D("h101","kpk0cas0: xSec vs. Egamma",91,2.95,12.05);
 TH1D *h102 = new TH1D("h102","kpkpcasm: xSec vs. Egamma",91,2.95,12.05);
 
+//Define vz histo
+//TH1D *h301 = new TH1D("h301","vZ",100,0.0,100.0);
+//TH1D *h302 = new TH1D("h302","vt",100,0.0,100.0);
+//TH1D *h303 = new TH1D("h303","d",100,0.0,100.0);
+
 //Define some virtual photon histograms
 TH1D *h201 = new TH1D("h201","#nu",160,6.5,10.5);
 TH1D *h202 = new TH1D("h202","Q^{2}",350,0.0,0.35);
@@ -204,7 +209,7 @@ int main(int argc, char **argv)
     }
 
     if (pyEdit == 1) myPythia->Pyedit(2); //Remove decayed particles
-    if (printToScreen == 1) myPythia->Pylist(1); //Print the final state to screen
+    if (printToScreen == 1) myPythia->Pylist(1);  //Print the final state to screen
 
     int numParticles = myPythia->GetNumberOfParticles();
     TObjArray *particles = myPythia->GetListOfParticles();
@@ -222,6 +227,8 @@ int main(int argc, char **argv)
     int nK=0;
     int nKm=0;
 
+    double betaVal = -1;
+    double gammaVal = -1;
     for(int j = 0; j < numParticles; j++) {
       myParticle = (TMCParticle*)particles->At(j);
       vsGen.kf[nGen] = myParticle->GetKF();
@@ -236,10 +243,25 @@ int main(int argc, char **argv)
       vsGen.vy[nGen] = myParticle->GetVy();
       vsGen.vz[nGen] = myParticle->GetVz();
       //Reset vertex to cm instead of mm
+      if (vsGen.kf[nGen] == 3122) {
+	double pValSq = pow(vsGen.px[nGen],2) +  pow(vsGen.py[nGen],2) +  pow(vsGen.pz[nGen],2);
+	double pVal = sqrt(pValSq);
+	betaVal = pVal/vsGen.E[nGen];
+	gammaVal = vsGen.E[nGen]/vsGen.m[nGen];
+      }
+      if (vsGen.kf[nGen] == 2212) {
+	//h301->Fill(vsGen.vz[nGen]/10.0);
+	//double dValSq = pow(vsGen.vx[nGen],2) +  pow(vsGen.vy[nGen],2) +  pow(vsGen.vz[nGen],2);
+	//double dVal = sqrt(dValSq)/10.0;
+	//double tValLab = dVal/(betaVal*3);
+	//double tVal0 = tValLab/gammaVal;
+	//h302->Fill(tVal0);
+	//h303->Fill(dVal);
+      }
       vsGen.vx[nGen] = vsGen.vx[nGen]/10.0;
       vsGen.vy[nGen] = vsGen.vy[nGen]/10.0;
       vsGen.vz[nGen] = vsGen.vz[nGen]/10.0;
-
+      
       //Randomly place vertex along z within target
       vsGen.vz[nGen] = vsGen.vz[nGen] + vOffset;
 
@@ -253,7 +275,11 @@ int main(int argc, char **argv)
       vSmearZ = rand1->Gaus(0.0,vResolution);
       vsGen.vx[nGen] = vsGen.vx[nGen] + vSmearX;
       vsGen.vy[nGen] = vsGen.vy[nGen] + vSmearY;
+
+      //cout<<"vsGen.vz["<<nGen<<"] = "<<vsGen.vz[nGen]<<" , vSmearZ = "<<" , vOffset = "<<vOffset<<endl;
       vsGen.vz[nGen] = vsGen.vz[nGen] + vSmearZ;
+
+
 
       if (vsGen.kf[nGen] == 22 && vsGen.parent[nGen] == 1 && vsGen.ks[nGen] == 21) {
 	nVpho++;
@@ -341,6 +367,9 @@ int main(int argc, char **argv)
     h2000->Write();
     h201->Write();
     h202->Write();
+    //h301->Write();
+    //h302->Write();
+    //h303->Write();
     t1->Write(); //Write out the tree
     fout->Close(); //Close the file
   }
@@ -446,6 +475,26 @@ Double_t initEvent(TPythia6 *myPythia,int coreRxn,double eMax,
       partCode[0] = 3324; // (Xi0)*
       partCode[1] = 321;  // K+
       partCode[2] = 311;  // K0
+    }  
+    if (coreRxn == 6) { //Lambda K+
+      nParticles = 2;
+      partCode[0] = 3122; // Lambda
+      partCode[1] = 321;  // K+
+    }  
+    if (coreRxn == 7) { //p rho0
+      nParticles = 2;
+      partCode[0] = 2212; // proton
+      partCode[1] = 113;  // rho0
+    }  
+    if (coreRxn == 8) { //p omega
+      nParticles = 2;
+      partCode[0] = 2212; // proton
+      partCode[1] = 223;  // omega
+    }  
+    if (coreRxn == 9) { //p phi
+      nParticles = 2;
+      partCode[0] = 2212; // proton
+      partCode[1] = 333;  // phi
     }  
     
     
@@ -714,6 +763,10 @@ void printUsage(){
   fprintf(stderr,"\t\t3: Xi0 K+ K0\n");
   fprintf(stderr,"\t\t4: Xi-* K+ K+\n");
   fprintf(stderr,"\t\t5: Xi0* K+ K0\n");
+  fprintf(stderr,"\t\t6: Lambda K+\n");
+  fprintf(stderr,"\t\t7: p rho0\n");
+  fprintf(stderr,"\t\t8: p omega\n");
+  fprintf(stderr,"\t\t9: p phi\n");
   fprintf(stderr,"-x<arg>\tRemove decayed particles if equal to 1\n");
   fprintf(stderr,"-l<arg>\tMinimum incident photon energy to generate in GeV: ONLY USED FOR REAL PHOTONS\n");
   fprintf(stderr,"-u<arg>\tMaximum incident photon energy to generate in GeV: ONLY USED FOR REAL PHOTONS\n");
